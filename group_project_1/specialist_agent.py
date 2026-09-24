@@ -1,9 +1,9 @@
 import os
 import json
 from pathlib import Path
-import faiss
-import numpy as np
 from sentence_transformers import SentenceTransformer
+import numpy as np
+import faiss
 from groq import Groq
 from dotenv import load_dotenv
 
