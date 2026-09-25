@@ -24,6 +24,27 @@ CATEGORY_MAP = {
     "Password Reset": "account_access", # maps directly to Account Access
 }
 
+def map_category(raw_category):
+    """
+    Falls back to keyword matching when the Specialist returns a symptom
+    description instead of a clean category label.
+    """
+    exact = CATEGORY_MAP.get(raw_category)
+    if exact:
+        return exact
+
+    lowered = raw_category.lower()
+    if any(word in lowered for word in ["keyboard", "mouse", "monitor", "device", "hardware", "laptop", "docking"]):
+        return "hardware"
+    if any(word in lowered for word in ["wifi", "wi-fi", "network", "connect"]):
+        return "network"
+    if any(word in lowered for word in ["password", "login", "account", "locked", "email", "security"]):
+        return "account_access"
+    if any(word in lowered for word in ["software", "install", "application", "update"]):
+        return "software"
+
+    return "software"
+
 
 class RequesterAgent:
     def __init__(self, timeout=15.0, poll_interval=0.5):
@@ -53,7 +74,7 @@ class RequesterAgent:
         if status == "completed":
             result = final["result"]
             raw_category = result.get("category", "Unknown")
-            mapped_category = CATEGORY_MAP.get(raw_category, "software")  # default fallback
+            mapped_category = map_category(raw_category)  # default fallback
             return {
                 "issue": user_request,
                 "category": mapped_category,
